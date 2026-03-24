@@ -1,0 +1,18 @@
+params {
+  // reqired parameters
+
+  ref_scaffolds = null // absolute paths
+  query_scaffolds = null
+
+  ref_id = null // Example: 'Xm'
+  query_id = null // Example: 'De'
+
+
+
+  // change this if you're not happy with your results
+
+  min_link_size = 50000 // more or less links in your plot, increasing this too much might lead to an error. 
+
+  segment_length = 10000 // mashmap flag
+  percent_identity = 75 // switch to 90 if the genomes are closely related
+}
