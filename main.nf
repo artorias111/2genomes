@@ -1,30 +1,26 @@
-nextflow.enable.dsl=2
+nextflow.enable.dsl = 2
 
-include { GENERATE_SAMTOOLS_INDEX } from './bin/helper_scripts.nf'
-include { SKETCH_ALIGN           } from './bin/mashmap.nf'
-include { MAKE_KARYOTYPE; CIRCOS } from './bin/circos.nf'
+include { GENERATE_SAMTOOLS_INDEX as GS1 } from './bin/helper_scripts.nf'
+include { GENERATE_SAMTOOLS_INDEX as GS2 } from './bin/helper_scripts.nf'
+include { SKETCH_ALIGN            } from './bin/mashmap.nf'
+include { MAKE_KARYOTYPE          } from './bin/circos.nf'
+include { PREFIX_LINKS            } from './bin/circos.nf'
+include { MAKE_CONF               } from './bin/circos.nf'
+include { CIRCOS                  } from './bin/circos.nf'
 
 workflow {
-    Channel
-        .fromPath(params.ref_scaffolds)
-        .set { ch_ref_fasta }
+    ref_ch   = Channel.fromPath(params.ref_scaffolds,   checkIfExists: true)
+    query_ch = Channel.fromPath(params.query_scaffolds, checkIfExists: true)
 
-    Channel
-        .fromPath(params.query_scaffolds)
-        .set { ch_query_fasta }
+    fai_ref   = GS1(ref_ch).index
+    fai_query = GS2(query_ch).index
 
-    ref_index_ch = GENERATE_SAMTOOLS_INDEX(ch_ref_fasta).index
-    query_index_ch = GENERATE_SAMTOOLS_INDEX(ch_query_fasta).index
+    karyotype = MAKE_KARYOTYPE(fai_ref, fai_query).karyotype
 
-    mashmap_results = SKETCH_ALIGN(ch_ref_fasta, ch_query_fasta)
-    links_ch = mashmap_results.circos_links
+    mashmap   = SKETCH_ALIGN(ref_ch, query_ch).mashmap_out
+    links     = PREFIX_LINKS(mashmap).circos_links
 
-    karyotype_ch = MAKE_KARYOTYPE(ref_index_ch, query_index_ch).karyotype
+    conf      = MAKE_CONF(karyotype)
 
-    conf_ch = Channel.fromPath(params.circos_conf)
-
-    circos_out = CIRCOS(conf_ch, karyotype_ch, links_ch)
-
-    circos_out.circos_png.view { "Circos PNG: ${it}" }
-    circos_out.circos_svg.view { "Circos SVG: ${it}" }
+    CIRCOS(conf, karyotype, links)
 }
