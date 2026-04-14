@@ -18,7 +18,7 @@ workflow {
     karyotype = MAKE_KARYOTYPE(fai_ref, fai_query).karyotype
 
     mashmap   = SKETCH_ALIGN(ref_ch, query_ch).mashmap_out
-    links     = PREFIX_LINKS(mashmap).circos_links
+    links     = PREFIX_LINKS(mashmap, karyotype).circos_links
 
     conf      = MAKE_CONF(karyotype)
 
