@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import sys
 
@@ -12,12 +13,8 @@ def generate_circos_karyotype(fai_files, prefixes, color_modes):
 
                 # Handle the color mapping logic
                 if color_mode == "ref":
-                    if i == 23:
-                        color = "chrx"
-                    elif i == 24:
-                        color = "chry"
-                    else:
-                        color = f"chr{i}"
+                    idx = ((i - 1) % 24) + 1
+                    color = f"chr{idx}"
                 else:
                     color = "grey"
 

@@ -11,7 +11,7 @@ process MAKE_KARYOTYPE {
     def query_id = params.query_id
 
     """
-    python ${projectDir}/bin/generate_karyotype.py \\
+    generate_karyotype.py \\
         --ref_index ${fai_ref} \\
         --query_index ${fai_query} \\
         --ref_prefix ${ref_id} \\
@@ -30,8 +30,8 @@ process MAKE_CONF {
     def sm = params.ref_id
     def dm = params.query_id
     """
-    LAST_SM=\$(grep "^chr.*${sm}_" ${karyotype} | tail -1 | awk '{print \$4}')
-    FIRST_DM=\$(grep "^chr.*${dm}_" ${karyotype} | head -1 | awk '{print \$4}')
+    LAST_SM=\$(grep "^chr.*${sm}_" ${karyotype} | tail -1 | awk '{print \$3}')
+    FIRST_DM=\$(grep "^chr.*${dm}_" ${karyotype} | head -1 | awk '{print \$3}')
 
     sed \
         -e "s|SM_PREFIX|${sm}_|g" \
@@ -44,6 +44,7 @@ process MAKE_CONF {
 process PREFIX_LINKS {
     input:
     path mashmap_out
+    path karyotype
 
     output:
     path "circos_links.txt", emit: circos_links
@@ -53,12 +54,12 @@ process PREFIX_LINKS {
     def dm = params.query_id
     def min_size = params.min_link_size ?: 5000 
     """
-    awk -v min=${min_size} 'BEGIN{OFS=" "} 
-    (\$9 - \$8) >= min {
-        n=\$6; gsub(/[^0-9]/, "", n); 
-        
-        print "${sm}_"\$6, \$8, \$9, "${dm}_"\$1, \$3, \$4, "color=chr" n "_a4"
-    }' ${mashmap_out}  | sed s'/chr23/chrx/' | sed s'/chr24/chry/' > circos_links.txt
+    process_links.py \\
+        --mashmap ${mashmap_out} \\
+        --karyotype ${karyotype} \\
+        --ref_id ${sm} \\
+        --query_id ${dm} \\
+        --min_size ${min_size} > circos_links.txt
     """
 }
 
