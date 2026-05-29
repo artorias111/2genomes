@@ -59,6 +59,39 @@ Results land in `results/circos.png` and `results/circos.svg`.
 
 Increase `percent_identity` to 90+ for closely related species. Raise `min_link_size` to reduce visual clutter for highly syntenic genomes.
 
+## Visualizing karyotype evolution against the ancestral teleost karyotype (Xmac)
+
+The platyfish _Xiphophorus maculatus_ (Xmac) carries the ancestral 24-chromosome teleost karyotype, making it an ideal reference for tracking chromosome fusions, fissions, and translocations across teleost species. Using Xmac as `ref_genome` assigns each of the 24 ancestral linkage groups a distinct color; your genome's chromosomes then inherit those colors based on synteny, immediately revealing which ancestral chromosomes fused, split, or remained intact.
+
+**1. Download the Xmac genome from Ensembl:**
+
+```shell
+# Example — check https://useast.ensembl.org/Xiphophorus_maculatus for the current release
+wget https://ftp.ensembl.org/pub/current_fasta/xiphophorus_maculatus/dna/Xiphophorus_maculatus.X_maculatus-5.0-male.dna.toplevel.fa.gz
+gunzip Xiphophorus_maculatus.X_maculatus-5.0-male.dna.toplevel.fa.gz
+```
+
+**2. Config for an Xmac comparison:**
+
+```
+params.ref_genome        = "/path/to/Xiphophorus_maculatus.toplevel.fa"
+params.query_genome      = "/path/to/your_genome.fasta"
+params.ref_id            = "Xm"
+params.query_id          = "YourSp"
+params.percent_identity  = 75   # lower tolerance needed for distant teleosts
+params.min_link_size     = 50000
+```
+
+**3. Run as usual:**
+
+```shell
+nextflow run artorias111/2genomes -c my_run.config
+```
+
+In the output plot, chromosomes of the same color share ancestry. A query chromosome that is a single solid color likely represents an intact ancestral linkage group; one that is grey has no detectable synteny to any Xmac chromosome (may be a sex chromosome or highly rearranged region). See [Pennell et al. 2015](https://doi.org/10.1534/genetics.114.164293) for the biological rationale behind using Xmac as an ancestral karyotype reference.
+
+---
+
 ## Tips
 
 - **Chromosome-level assemblies work best.** If using a scaffold-level assembly, pre-filter to your L90 scaffolds (the top ~N longest scaffolds covering 90% of the genome) to avoid an overcrowded plot.
