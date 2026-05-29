@@ -1,18 +1,27 @@
-params {
-  // reqired parameters
+// ─── INPUTS ───────────────────────────────────────────────────────────────────
+// Full paths to chromosome-level genome FASTA files
+params.ref_genome   = "/path/to/genome_A.fasta"
+params.query_genome = "/path/to/genome_B.fasta"
 
-  ref_scaffolds = null // absolute paths
-  query_scaffolds = null
+// Short identifiers used as chromosome prefixes in the circos plot
+// (avoid underscores; 2-4 chars works best for labels)
+params.ref_id   = "RefA"
+params.query_id = "QryB"
 
-  ref_id = null // Example: 'Xm'
-  query_id = null // Example: 'De'
+// ─── TOOL PATHS ───────────────────────────────────────────────────────────────
+params.mashmap_path = "/data2/work/local/MashMap/build/bin"
+params.circos_env   = "/path/to/conda/envs/circos"
 
+// ─── ALIGNMENT TUNING ─────────────────────────────────────────────────────────
+// Minimum synteny block size to draw a link (bp). Raise to reduce clutter.
+params.min_link_size    = 50000
 
+// MashMap segment length — smaller = more sensitive but slower
+params.segment_length   = 10000
 
-  // change this if you're not happy with your results
+// Minimum sequence identity for a reported alignment.
+// Use 75 for distantly related species, 90+ for closely related.
+params.percent_identity = 75
 
-  min_link_size = 50000 // more or less links in your plot, increasing this too much might lead to an error. 
-
-  segment_length = 10000 // mashmap flag
-  percent_identity = 75 // switch to 90 if the genomes are closely related
-}
+// ─── RUN ──────────────────────────────────────────────────────────────────────
+// nextflow run /path/to/circos_simplified -c config_template
