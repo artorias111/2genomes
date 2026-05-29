@@ -1,7 +1,7 @@
 process SKETCH_ALIGN {
     input:
-    path ref_scaffolds
-    path query_scaffolds
+    path ref_genome
+    path query_genome
 
     output:
     path "mashmap_out.txt", emit: mashmap_out
@@ -9,8 +9,8 @@ process SKETCH_ALIGN {
     script:
     """
     ${params.mashmap_path}/mashmap \
-        -r ${ref_scaffolds} \
-        -q ${query_scaffolds} \
+        -r ${ref_genome} \
+        -q ${query_genome} \
         -t ${params.nthreads} \
         -s ${params.segment_length} \
         --pi ${params.percent_identity} \
