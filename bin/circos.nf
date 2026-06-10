@@ -31,13 +31,17 @@ process MAKE_CONF {
     def ref_id   = params.ref_id
     def query_id = params.query_id
     """
+    FIRST_REF=\$(grep "^chr.*${ref_id}_" ${karyotype} | head -1 | awk '{print \$3}')
     LAST_REF=\$(grep "^chr.*${ref_id}_" ${karyotype} | tail -1 | awk '{print \$3}')
     FIRST_QRY=\$(grep "^chr.*${query_id}_" ${karyotype} | head -1 | awk '{print \$3}')
+    LAST_QRY=\$(grep "^chr.*${query_id}_" ${karyotype} | tail -1 | awk '{print \$3}')
 
     sed \
         -e "s|REF_PREFIX|${ref_id}_|g" \
+        -e "s|FIRST_REF_CHR|\${FIRST_REF}|g" \
         -e "s|LAST_REF_CHR|\${LAST_REF}|g" \
         -e "s|FIRST_QRY_CHR|\${FIRST_QRY}|g" \
+        -e "s|LAST_QRY_CHR|\${LAST_QRY}|g" \
         -e "s|REF_LABEL|${ref_id}|g" \
         -e "s|QRY_LABEL|${query_id}|g" \
         ${projectDir}/assets/circos_template.conf > circos.conf
@@ -70,6 +74,7 @@ process CIRCOS {
     conda params.circos_env
 
     publishDir "${params.outdir ?: 'results'}", mode: 'copy'
+    publishDir ".",                              mode: 'symlink', overwrite: true
 
     input:
     path circos_conf

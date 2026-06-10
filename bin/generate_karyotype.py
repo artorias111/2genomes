@@ -94,8 +94,21 @@ def main():
     # Determine dominant ref chrom for each query chrom
     dominant = parse_mashmap(args.mashmap) if args.mashmap else {}
 
-    # Print query karyotype — color matches homologous ref, else grey
-    for name, length in query_chroms:
+    # Sort query chroms in DESCENDING order of their homologous ref index so that
+    # after the large gap (last-ref → first-query) the query block runs from the
+    # homolog of the last ref down to the homolog of the first ref.  This places
+    # homolog pairs adjacent at the top gap (last-query → first-ref) and keeps
+    # link lines from crossing each other.
+    ref_order = {name: i for i, (name, _) in enumerate(ref_chroms)}
+
+    def query_sort_key(item):
+        name, _ = item
+        dref = dominant.get(name)
+        return -ref_order.get(dref, -1) if dref else len(ref_chroms)
+
+    sorted_query = sorted(query_chroms, key=query_sort_key)
+
+    for name, length in sorted_query:
         cid   = f"{args.query_prefix}_{name}"
         dref  = dominant.get(name)
         color = ref_color.get(dref, "grey") if dref else "grey"
